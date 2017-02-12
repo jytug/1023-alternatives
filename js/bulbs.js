@@ -1,5 +1,6 @@
 var nbulbs = 10;
-var nrounds = 3;
+var ntestrounds = 1;
+var nrounds = 1;
 var between_rounds = 3;
 
 var config = get_config();
@@ -57,25 +58,32 @@ function finish(config, lit, clicked) {
     console.log("Lampy zapalone:\n" + config);
 }
 
-function restart(settings, config, lit, clicked, round_no) {
+function restart(settings, config, lit, clicked, round_no, training) {
     finish(config, lit, clicked);
-    intermission(settings, round_no, between_rounds);
+    intermission(settings, round_no, between_rounds, training);
 }
 
-function intermission(settings, round_no, secs) {
-    if (round_no < nrounds - 1) {
+function intermission(settings, round_no, secs, training) {
+    n = training ? ntestrounds : nrounds;
+    if (round_no < n - 1) {
         $('.countdown').css("display", "block");
         $('.countdown').html("<h1>" + secs + "</h1>");
         if (secs > 1) {
             setTimeout(function() {
-                intermission(settings, round_no, secs - 1);
+                intermission(settings, round_no, secs - 1, training);
             }, 1000);
         } else {
             setTimeout(function() {
                 $('.countdown').css("display", "none");
-                run_round(settings, round_no + 1);
+                run_round(settings, round_no + 1, training);
             }, 1000);
         }
+    } else if (training) {
+        session_message(settings, function() {
+            intermission(settings, -1, between_rounds, false);
+        });
+    } else {
+        bye_message();
     }
 }
 
@@ -92,7 +100,7 @@ var config;
 var lit;
 var clicked;
 
-function run_round(settings, round_no) {
+function run_round(settings, round_no, training) {
     config = get_config();
     lit = config.slice();
     clicked = new Array(10).fill(false);
@@ -107,7 +115,27 @@ function run_round(settings, round_no) {
 
     light_up(config);
     setTimeout(restart, settings['timeout'], settings, config,
-               lit, clicked, round_no);
+               lit, clicked, round_no, training);
+}
+
+function training_message(settings, callback) {
+    $('.test_message').css("display", "block");
+    $('#run_test_session').click(function() {
+        $('.test_message').css("display", "none");
+        callback();
+    });
+}
+
+function session_message(settings, callback) {
+    $('.session_message').css("display", "block");
+    $('#run_real_session').click(function() {
+        $('.session_message').css("display", "none");
+        callback();
+    });
+}
+
+function bye_message() {
+    $('.bye_message').css("display", "block");
 }
 
 // The settings
@@ -116,8 +144,9 @@ function get_settings_and_go() {
     success: function(result) {
         init();
         var settings = JSON.parse(result);
-        for (i = 0; i < nrounds; i++)
-            run_round(settings, i);
+        training_message(settings, function() {
+            intermission(settings, -1, between_rounds, true);
+        });
     }});
 }
 
