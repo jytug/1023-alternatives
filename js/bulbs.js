@@ -3,7 +3,18 @@ var ntestrounds = 1;
 var nrounds = 1;
 var between_rounds = 3;
 
-var config = get_config();
+var start;
+var response_time = new Array(10).fill(0.0);
+
+//var config = get_config();
+function baseName(str) {
+   var base = new String(str).substring(str.lastIndexOf('/') + 1); 
+    if(base.lastIndexOf(".") != -1)       
+        base = base.substring(0, base.lastIndexOf("."));
+   return base;
+}
+
+nick = baseName(window.location.href);
 
 // Sound
 var horn = new Audio('/sound/nope.wav');
@@ -19,18 +30,21 @@ function btn_to_bulb(btn) {
 
 
 // The configuration
-function get_config() {
-    // TODO tutaj bedzie request do servera
-    var resu = []
-        for (i = 0; i < nbulbs; i++) {
-            resu.push(Math.random() > 0.5);
-        }
-    return resu;
+function get_config(settings, round_no, training, callback) {
+    $.ajax({url: "/bulbs/" + nick + "/getConfig",
+    success: function(result) {
+        console.log(result);
+        config = JSON.parse(result);
+        console.log(config);
+        callback(config);
+    }});
 }
 
 function bulbClicked(bulb_no, lit, clicked, settings) {
     if (lit[bulb_no]) {
         clicked[bulb_no] = true;
+        if (response_time[bulb_no] == 0)
+            response_time[bulb_no] = new Date().getTime() - start;
     } else {
         if (settings['feedback']) {
             horn.play();
@@ -46,6 +60,7 @@ function init() {
         $('.bulb_container').append(blb);
     }
 }
+
 function light_up(config) {
     for (i = 0; i < nbulbs; i++)
         if (config[i])
@@ -56,6 +71,9 @@ function finish(config, lit, clicked) {
     switchOff(config, lit);
     console.log("Lampy wciśnięte:\n" + clicked);
     console.log("Lampy zapalone:\n" + config);
+    console.log("Czasy wciskania:\n" + response_time);
+    // TODO send to server
+    response_time.fill(0);
 }
 
 function restart(settings, config, lit, clicked, round_no, training) {
@@ -101,21 +119,22 @@ var lit;
 var clicked;
 
 function run_round(settings, round_no, training) {
-    config = get_config();
-    lit = config.slice();
-    clicked = new Array(10).fill(false);
+    get_config(settings, round_no, training, function(config) {
+        lit = config.slice();
+        clicked = new Array(10).fill(false);
 
-    // Listen for keystrokes
-    document.addEventListener('keydown', function(event) {
-        bulb_no = btn_to_bulb(event.keyCode);
-        if (bulb_no == -1 || !config)
-            return;
-        bulbClicked(bulb_no, lit, clicked, settings);
+        // Listen for keystrokes
+        document.addEventListener('keydown', function(event) {
+            bulb_no = btn_to_bulb(event.keyCode);
+            if (bulb_no == -1 || !config)
+                return;
+            bulbClicked(bulb_no, lit, clicked, settings);
+        });
+        start = new Date().getTime();
+        light_up(config);
+        setTimeout(restart, settings['timeout'], settings, config,
+                lit, clicked, round_no, training);
     });
-
-    light_up(config);
-    setTimeout(restart, settings['timeout'], settings, config,
-               lit, clicked, round_no, training);
 }
 
 function training_message(settings, callback) {

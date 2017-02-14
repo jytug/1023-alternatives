@@ -2,6 +2,7 @@ import sqlite3
 import ipdb
 import json
 import numpy as np
+import random
 from flask import g, Flask, render_template, send_from_directory, request
 from database import query_db
 from settings import Settings
@@ -35,6 +36,14 @@ def send_sound(path):
 def giveSettings():
     return json.dumps(dict(ex_settings))
 
+@app.route('/bulbs/<nickname>/getConfig')
+def giveConfig(nickname):
+    # TODO query the database
+    config = []
+    for _ in range(10):
+        config.append(random.random() > .5)
+    return json.dumps(config)
+
 # views
 @app.route('/')
 def index():
@@ -44,9 +53,9 @@ def index():
 def settings():
     return render_template('settings.html')
 
-@app.route('/bulbs/<path:path>')
-def bulbs(path):
-    return render_template('bulbs.html', nick=path)
+@app.route('/bulbs/<nickname>')
+def bulbs(nickname):
+    return render_template('bulbs.html', nick=nickname)
 
 # post
 @app.route('/', methods=['POST'])
