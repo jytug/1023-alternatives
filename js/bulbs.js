@@ -40,11 +40,15 @@ function get_config(settings, round_no, training, callback) {
     }});
 }
 
-function bulbClicked(bulb_no, lit, clicked, settings) {
+function bulbClicked(bulb_no, lit, clicked, settings, round_no, training) {
     if (lit[bulb_no]) {
         clicked[bulb_no] = true;
         if (response_time[bulb_no] == 0)
             response_time[bulb_no] = new Date().getTime() - start;
+        if (JSON.stringify(clicked) === JSON.stringify(lit) && settings['mode'] === 'relative') {
+            setTimeout(restart, settings['timeout'], settings, config,
+                 lit, clicked, round_no, training);
+        }
     } else {
         if (settings['feedback']) {
             horn.play();
@@ -73,6 +77,13 @@ function finish(config, lit, clicked) {
     console.log("Lampy zapalone:\n" + config);
     console.log("Czasy wciskania:\n" + response_time);
     // TODO send to server
+    $.post("/bulbs/" + nick + "/submit",
+        {
+            results: JSON.stringify(response_time)
+        },
+        function(data, status) {
+            console.log("Przesłano dane: " + data);
+    });
     response_time.fill(0);
 }
 
@@ -128,12 +139,14 @@ function run_round(settings, round_no, training) {
             bulb_no = btn_to_bulb(event.keyCode);
             if (bulb_no == -1 || !config)
                 return;
-            bulbClicked(bulb_no, lit, clicked, settings);
+            bulbClicked(bulb_no, lit, clicked, settings, round_no, training);
         });
         start = new Date().getTime();
         light_up(config);
-        setTimeout(restart, settings['timeout'], settings, config,
-                lit, clicked, round_no, training);
+        if (settings['mode'] == 'const') {
+            setTimeout(restart, settings['timeout'], settings, config,
+                 lit, clicked, round_no, training);
+        }
     });
 }
 
@@ -162,6 +175,7 @@ function get_settings_and_go() {
     $.ajax({url: "/getSettings",
     success: function(result) {
         init();
+        console.log("Settings: " + result);
         var settings = JSON.parse(result);
         training_message(settings, function() {
             intermission(settings, -1, between_rounds, true);

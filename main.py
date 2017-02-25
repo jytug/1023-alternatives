@@ -44,6 +44,12 @@ def giveConfig(nickname):
         config.append(random.random() > .5)
     return json.dumps(config)
 
+# getting data from the front
+@app.route('/bulbs/<nickname>/submit', methods=['POST'])
+def getResult(nickname):
+    print("Got data: " + str(request.form))
+    return "eloooo"
+
 # views
 @app.route('/')
 def index():
