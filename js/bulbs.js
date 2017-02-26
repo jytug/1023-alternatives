@@ -1,12 +1,14 @@
 var nbulbs = 10;
-var ntestrounds = 1;
-var nrounds = 1;
+var ntestrounds = 2;
+var nrounds = 2;
 var between_rounds = 3;
 
 var start;
+var end;
 var response_time = new Array(10).fill(0.0);
 
-//var config = get_config();
+var keys = "asdfghjkl;";
+
 function baseName(str) {
    var base = new String(str).substring(str.lastIndexOf('/') + 1); 
     if(base.lastIndexOf(".") != -1)       
@@ -58,10 +60,16 @@ function bulbClicked(bulb_no, lit, clicked, settings, round_no, training) {
 
 function init() {
     for (i = 0; i < nbulbs; i++) {
+        var fig = document.createElement("figure");
         var blb = document.createElement("img");
+        var cap = document.createElement("figcaption");
         blb.src = "/img/off.png";
         blb.id = "blb_" + i;
-        $('.bulb_container').append(blb);
+        cap.textContent = keys[i];
+        fig.appendChild(blb);
+        fig.appendChild(cap);
+        $('.bulb_container').append(fig);
+        console.log(cap);
     }
 }
 
@@ -71,24 +79,28 @@ function light_up(config) {
             $('#blb_' + i).attr("src", "/img/on.png")
 }
 
-function finish(config, lit, clicked) {
+function finish(config, lit, clicked, training) {
     switchOff(config, lit);
     console.log("Lampy wciśnięte:\n" + clicked);
     console.log("Lampy zapalone:\n" + config);
     console.log("Czasy wciskania:\n" + response_time);
-    // TODO send to server
-    $.post("/bulbs/" + nick + "/submit",
-        {
-            results: JSON.stringify(response_time)
-        },
-        function(data, status) {
-            console.log("Przesłano dane: " + data);
-    });
+    if (!training) {
+        $.post("/bulbs/" + nick + "/submit",
+           {
+               results: JSON.stringify(response_time),
+               start: start,
+               end: new Date().getTime(),
+               config: JSON.stringify(config),
+           },
+           function(data, status) {
+               console.log("Przesłano dane: " + data);
+           });
+    }
     response_time.fill(0);
 }
 
 function restart(settings, config, lit, clicked, round_no, training) {
-    finish(config, lit, clicked);
+    finish(config, lit, clicked, training);
     intermission(settings, round_no, between_rounds, training);
 }
 

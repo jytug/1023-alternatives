@@ -1,4 +1,5 @@
 from flask import g
+import sqlite3
 
 DATABASE = 'results.db'
 
@@ -15,4 +16,17 @@ def query_db(query, args=(), one=False):
     cur.close()
     return (rv[0] if rv else None) if one else rv
 
-
+def insert(table, fields=(), values=()):
+    if fields == ():
+        query = 'INSERT INTO %s VALUES (%s)' % (
+            table,
+            ', '.join(['?'] * len(values))
+        )
+    else: 
+        query = 'INSERT INTO %s (%s) VALUES (%s)' % (
+            table,
+            ', '.join(fields),
+            ', '.join(['?'] * len(values))
+        )
+    get_db().execute(query, values)
+    get_db().commit()

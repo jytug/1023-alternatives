@@ -6,4 +6,7 @@ $('document').ready(function() {
         else
             alert("Nick can't be empty");
     });
+    $('#settings').click(function() {
+        window.location.replace("settings");
+    });
 });

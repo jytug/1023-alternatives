@@ -1,10 +1,23 @@
 {% extends "layout.html" %}
 {% block body %}
-<p><a href="settings">Ustawienia</a></p>
-<p>
-    <input id="nick" type="text" name="nickname" placeholder="nickname">
-    <button id="new_experiment">Rozpocznij</button>
-</p>
+    <div class="form-basic">  
+        <div class="form-row">
+            <label>
+                <span>Nick</span>
+                <input id="nick" type="text" name="nickname" placeholder="nickname">
+            </label>
+        </div>
+        <div class="form-row">
+            <label>
+                <button id="new_experiment">Begin</button>
+            </label>
+        </div>
+        <div class="form-row">
+            <label>
+                <button id="settings">Settings</button>
+            </label>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}

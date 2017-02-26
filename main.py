@@ -1,11 +1,9 @@
-import sqlite3
-import ipdb
-import json
+import sqlite3, ipdb, json, random
 import numpy as np
-import random
 from flask import g, Flask, render_template, send_from_directory, request
-from database import query_db
+from database import query_db, insert
 from settings import Settings
+from helpers import parseJSTimeStamp, intToArray, arrayToInt
 
 # init
 ex_settings = Settings()
@@ -17,7 +15,6 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-
 # resources
 @app.route('/img/<path:path>')
 def send_img(path):
@@ -26,6 +23,10 @@ def send_img(path):
 @app.route('/js/<path:path>')
 def send_js(path):
     return send_from_directory('js', path)
+
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('css', path)
 
 @app.route('/sound/<path:path>')
 def send_sound(path):
@@ -39,16 +40,27 @@ def giveSettings():
 @app.route('/bulbs/<nickname>/getConfig')
 def giveConfig(nickname):
     # TODO query the database
-    config = []
+    possib = set(range(1, 1024))
+    rows = query_db("SELECT config FROM results WHERE nick = \"" + nickname + "\"")
+    used = set([int(row['config']) for row in rows])
+    possib = possib.difference(used)
+    print(used)
+    config = intToArray(random.sample(possib, 1)[0])
     for _ in range(10):
         config.append(random.random() > .5)
     return json.dumps(config)
 
 # getting data from the front
 @app.route('/bulbs/<nickname>/submit', methods=['POST'])
-def getResult(nickname):
-    print("Got data: " + str(request.form))
-    return "eloooo"
+def submit(nickname):
+    start = parseJSTimeStamp(int(request.form['start']))
+    end = parseJSTimeStamp(int(request.form['end']))
+    config = arrayToInt(json.loads(request.form['config']))
+    results = json.loads(request.form['results'])
+    # TODO insert into the database
+    values = [nickname, start, end, config] + results
+    insert("results", values=values)
+    return ""
 
 # views
 @app.route('/')
@@ -72,7 +84,6 @@ def get_settings():
     if fb == 'True':
         fb = True
     ex_settings.setTimeout(timeout).setMode(mode).setFeedback(fb)
-    print(ex_settings)
     return render_template('index.html')
 
 app.run()

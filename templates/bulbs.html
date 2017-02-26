@@ -1,20 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
-<p><h1>Hello, {{ nick }}</p>
 <div class="bulb_container">
 </div>
-<div class="countdown" style="display:none;">
+<div class="countdown message" style="display:none;">
 </div>
-<div class="test_message" style="display:none;">
-    <p><h5>Rozpocznij sesję treningową</h5></p>
-<button id="run_test_session">Dawaj</button>
+<div class="test_message message" style="display:none;">
+    <p><h5>Begin the training session</h5></p>
+<button id="run_test_session" class="button"><span>Go!</span></button>
 </div>
-<div class="session_message" style="display:none;">
-    <p><h5>Rozpocznij właściwą sesję</h5></p>
-<button id="run_real_session">Dawaj</button>
+<div class="session_message message" style="display:none;">
+    <span><h5>Begin the actual session</h5></span>
+    <button id="run_real_session" class="button"><span>Go!</span></button>
 </div>
-<div class="bye_message" style="display:none;">
-    <p><h5>Do widzenia</h5></p>
+<div class="bye_message message" style="display:none;">
+    <p><h5>Thank you!</h5></p>
 </div>
 {% endblock %}
 {% block scripts %}

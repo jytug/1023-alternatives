@@ -1,10 +1,39 @@
-<form id="contact-form" action="/" method="post">
+{% extends "layout.html" %}
+{% block body %}
+<form id="contact-form" action="/" method="post" class="form-basic">
     <input type="hidden" name="redirect" value="http://www.opera.com" />
-    Timeout:<br>
-    <input type="number" name="timeout" id="timeout" value="5000" /><br>
-    <input type="radio" name="mode" value="const" checked />Stały czas świecenia lamp<br>
-    <input type="radio" name="mode" value="relative" />Wyłącz lampy po wciśnięciu ostatniej<br>
-    <input type="checkbox" name="feedback" value="True">Feedback<br>
-    <input type="submit" value="submit" />
-    <input type="reset" value="reset" />
+    <div class="form-row">
+        <label>
+            <span>Timeout</span>
+            <input type="number" name="timeout" id="timeout" value="5000" /><br>
+        </label>
+    </div>
+    <div class="form-row">
+        <label><span>Time of light</span></label>
+        <div class="form-radio-buttons">
+            <div>
+                <label>
+                <input type="radio" name="mode" value="const" checked />
+                <span>Switch off after fixed time</span>
+                </label>
+            </div>
+            <div>
+                <label>
+                <input type="radio" name="mode" value="relative" />
+                <span>Switch off after all are clicked</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <label>
+            <span>Feedback</span>
+            <input type="checkbox" name="feedback" value="True">
+        </label>
+    </div>
+    <div class="form-row">
+        <input type="submit" value="submit" />
+        <input type="reset" value="reset" />
+    </div>
 </form>
+{% endblock %}
