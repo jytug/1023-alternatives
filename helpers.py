@@ -24,4 +24,6 @@ def intToArray(n):
     while (n > 0):
         res.insert(0, n % 2 == 1)
         n >>= 1
+    while len(res) < 10:
+        res.insert(0, False)
     return res

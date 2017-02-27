@@ -22,7 +22,7 @@ nick = baseName(window.location.href);
 var horn = new Audio('/sound/nope.wav');
 
 // A to L on keyboard
-var btns = [65, 83, 68, 70, 71, 72, 74, 75, 76, 186]
+var btns = [65, 83, 68, 70, 71, 72, 74, 75, 76, 59]
 function btn_to_bulb(btn) {
     for (i = 0; i < nbulbs; i++)
         if (btns[i] === btn)
@@ -42,14 +42,20 @@ function get_config(settings, round_no, training, callback) {
     }});
 }
 
-function bulbClicked(bulb_no, lit, clicked, settings, round_no, training) {
+function bulbClicked(config, bulb_no, lit, clicked, settings, round_no, training) {
     if (lit[bulb_no]) {
         clicked[bulb_no] = true;
         if (response_time[bulb_no] == 0)
             response_time[bulb_no] = new Date().getTime() - start;
-        if (JSON.stringify(clicked) === JSON.stringify(lit) && settings['mode'] === 'relative') {
-            setTimeout(restart, settings['timeout'], settings, config,
-                 lit, clicked, round_no, training);
+        if (settings['mode'] === 'relative') {
+            setTimeout(function() {
+                lit = switchOff(config, lit, i);
+                console.log("clicked " + JSON.stringify(clicked));
+                console.log("config " + JSON.stringify(config));
+                if (JSON.stringify(clicked) === JSON.stringify(config)) {
+                    restart(settings, config, lit, clicked, round_no, training);
+                }
+            }, settings['timeout']);
         }
     } else {
         if (settings['feedback']) {
@@ -135,6 +141,15 @@ function switchOff(config, lit) {
             lit[i] = false;
         }
     }
+    return lit;
+}
+
+function switchOff(config, lit, i) {
+    if (config[i]) {
+        $('#blb_' + i).attr("src", "/img/off.png")
+        lit[i] = false;
+    }
+    return lit;
 }
 
 var config;
@@ -148,10 +163,11 @@ function run_round(settings, round_no, training) {
 
         // Listen for keystrokes
         document.addEventListener('keydown', function(event) {
+            console.log("Przycisk: " + event.keyCode);
             bulb_no = btn_to_bulb(event.keyCode);
             if (bulb_no == -1 || !config)
                 return;
-            bulbClicked(bulb_no, lit, clicked, settings, round_no, training);
+            bulbClicked(config, bulb_no, lit, clicked, settings, round_no, training);
         });
         start = new Date().getTime();
         light_up(config);

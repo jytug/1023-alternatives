@@ -46,8 +46,6 @@ def giveConfig(nickname):
     possib = possib.difference(used)
     print(used)
     config = intToArray(random.sample(possib, 1)[0])
-    for _ in range(10):
-        config.append(random.random() > .5)
     return json.dumps(config)
 
 # getting data from the front
